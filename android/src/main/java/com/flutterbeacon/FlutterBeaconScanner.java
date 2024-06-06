@@ -3,6 +3,8 @@ package com.flutterbeacon;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +30,8 @@ import java.util.Map;
 
 import io.flutter.plugin.common.EventChannel;
 
+import com.example.canopyprotect.R;
+
 class FlutterBeaconScanner {
   private static final String TAG = FlutterBeaconScanner.class.getSimpleName();
   private final FlutterBeaconPlugin plugin;
@@ -43,25 +47,33 @@ class FlutterBeaconScanner {
   public FlutterBeaconScanner(FlutterBeaconPlugin plugin, Activity activity) {
     this.plugin = plugin;
     this.activity = new WeakReference<>(activity);
-    // final Context app = activity.getApplicationContext();
-    // final pm = app.packageManager;
-
-    Notification.Builder builder = new Notification.Builder(activity.getApplicationContext());
-    builder.setContentTitle("Scanning for Beacons");
-    // Intent intent = new Intent(activity.getApplicationContext(), activity.getClass());
-    // PendingIntent pendingIntent = PendingIntent.getActivity(
-    //         activity.getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
-    // );
-    // builder.setContentIntent(pendingIntent);
-    // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-    //     NotificationChannel channel = new NotificationChannel("beacon-detect-channel", "Beacon Detected", NotificationManager.IMPORTANCE_HIGH);
-    //     channel.setDescription("Beacon detection channel");
-    //     NotificationManager notificationManager = (NotificationManager) getSystemService(
-    //             Context.NOTIFICATION_SERVICE);
-    //     notificationManager.createNotificationChannel(channel);
-    //     builder.setChannelId(channel.getId());
-    // }
-    plugin.getBeaconManager().enableForegroundServiceScanning(builder.build(), 456);
+    
+    Log.d("[CPLOG]", "IN CONSTRUCTOR");
+    try {
+      Context context = this.activity.get().getApplicationContext();
+      PackageManager pm = context.getPackageManager();
+      Intent intent = new Intent(context, Class.forName("com.example.canopyprotect.MainActivity"));
+      PendingIntent pendingIntent = PendingIntent.getActivity(
+        context, 0, intent, PendingIntent.FLAG_IMMUTABLE
+      );
+      Notification.Builder builder = new Notification.Builder(activity.getApplicationContext());
+      builder.setContentTitle("Scanning for Beacons");
+      // Intent intent = new Intent(activity.getApplicationContext(), activity.getClass());
+      // PendingIntent pendingIntent = PendingIntent.getActivity(
+      //         activity.getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
+      // );
+      builder.setSmallIcon(R.mipmap.ic_launcher);
+      builder.setContentIntent(pendingIntent);
+      NotificationChannel channel = new NotificationChannel("beacon-detect-channel", "Beacon Detected", NotificationManager.IMPORTANCE_DEFAULT);
+      channel.setDescription("Beacon detection channel");
+      NotificationManager notificationManager = (NotificationManager) context.getSystemService(
+              Context.NOTIFICATION_SERVICE);
+      notificationManager.createNotificationChannel(channel);
+      builder.setChannelId(channel.getId());
+      plugin.getBeaconManager().enableForegroundServiceScanning(builder.build(), 1234);
+    } catch (Exception e) {
+      Log.e("[CPLOG]", "exception", e);
+    }
     handler = new Handler(Looper.getMainLooper());
   }
 
