@@ -1,9 +1,13 @@
 package com.flutterbeacon;
 
 import android.app.Activity;
+import android.app.Application;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.RemoteException;
 import android.os.Looper;
 import android.os.Handler;
@@ -39,6 +43,25 @@ class FlutterBeaconScanner {
   public FlutterBeaconScanner(FlutterBeaconPlugin plugin, Activity activity) {
     this.plugin = plugin;
     this.activity = new WeakReference<>(activity);
+    // final Context app = activity.getApplicationContext();
+    // final pm = app.packageManager;
+
+    Notification.Builder builder = new Notification.Builder(activity.getApplicationContext());
+    builder.setContentTitle("Scanning for Beacons");
+    // Intent intent = new Intent(activity.getApplicationContext(), activity.getClass());
+    // PendingIntent pendingIntent = PendingIntent.getActivity(
+    //         activity.getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
+    // );
+    // builder.setContentIntent(pendingIntent);
+    // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    //     NotificationChannel channel = new NotificationChannel("beacon-detect-channel", "Beacon Detected", NotificationManager.IMPORTANCE_HIGH);
+    //     channel.setDescription("Beacon detection channel");
+    //     NotificationManager notificationManager = (NotificationManager) getSystemService(
+    //             Context.NOTIFICATION_SERVICE);
+    //     notificationManager.createNotificationChannel(channel);
+    //     builder.setChannelId(channel.getId());
+    // }
+    plugin.getBeaconManager().enableForegroundServiceScanning(builder.build(), 456);
     handler = new Handler(Looper.getMainLooper());
   }
 
